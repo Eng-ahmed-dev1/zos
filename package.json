@@ -1,6 +1,6 @@
 {
   "name": "zos-pad",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zos Pad - Standalone Notepad-style text editor with embedded .zos highlighting",
   "main": "main/main.js",
   "type": "module",
