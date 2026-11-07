@@ -382,3 +382,29 @@ html, body {
   cursor: pointer;
   font-size: 12px;
 }
+
+/* Status Toast Notification */
+.status-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 14px;
+  background: #252526;
+  color: #4EC9B0;
+  border: 1px solid #007acc;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.status-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+

@@ -1,9 +1,28 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import electron from 'electron';
 const { app, dialog } = electron || {};
 
-
+/**
+ * Normalizes file path, converting any file:// URIs (e.g. from Linux XDG Desktop Portal)
+ * to real absolute filesystem paths.
+ */
+export function normalizePath(inputPath) {
+  if (!inputPath) return inputPath;
+  let p = String(inputPath).trim();
+  if (p.startsWith('file://')) {
+    try {
+      p = fileURLToPath(p);
+    } catch {
+      p = p.replace(/^file:\/\//, '');
+      try {
+        p = decodeURIComponent(p);
+      } catch {}
+    }
+  }
+  return path.normalize(p);
+}
 
 /**
  * Detects whether buffer starts with UTF-8 BOM (EF BB BF)
@@ -26,7 +45,8 @@ function detectLineEndings(text) {
  */
 export async function readFile(filePath) {
   try {
-    const rawBuffer = fs.readFileSync(filePath);
+    const targetPath = normalizePath(filePath);
+    const rawBuffer = fs.readFileSync(targetPath);
     const hasBom = hasUtf8Bom(rawBuffer);
     
     // Slice off BOM if present so Monaco deals with clean UTF-8
@@ -36,15 +56,16 @@ export async function readFile(filePath) {
     
     return {
       success: true,
-      filePath,
-      fileName: path.basename(filePath),
-      fileDir: path.dirname(filePath),
+      filePath: targetPath,
+      fileName: path.basename(targetPath),
+      fileDir: path.dirname(targetPath),
       content,
       hasBom,
       lineEndings,
       encoding: hasBom ? 'UTF-8 with BOM' : 'UTF-8',
     };
   } catch (err) {
+    console.error('[Zos Pad] Error reading file:', filePath, err);
     return {
       success: false,
       error: err.message,
@@ -57,7 +78,18 @@ export async function readFile(filePath) {
  */
 export async function writeFile(filePath, content, options = {}) {
   try {
+    const targetPath = normalizePath(filePath);
+    if (!targetPath) {
+      return { success: false, error: 'Empty or invalid file path' };
+    }
+
     const { hasBom = false, lineEndings = 'LF' } = options;
+
+    // Ensure directory exists
+    const dir = path.dirname(targetPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
     // Normalize line endings to target format
     let normalized = content.replace(/\r\n/g, '\n');
@@ -75,15 +107,16 @@ export async function writeFile(filePath, content, options = {}) {
       finalBuffer = contentBuffer;
     }
 
-    fs.writeFileSync(filePath, finalBuffer);
+    fs.writeFileSync(targetPath, finalBuffer);
 
     return {
       success: true,
-      filePath,
-      fileName: path.basename(filePath),
-      fileDir: path.dirname(filePath),
+      filePath: targetPath,
+      fileName: path.basename(targetPath),
+      fileDir: path.dirname(targetPath),
     };
   } catch (err) {
+    console.error('[Zos Pad] Error writing file:', filePath, err);
     return {
       success: false,
       error: err.message,
@@ -111,10 +144,10 @@ export async function showOpenDialog(browserWindow) {
     ? await dialog.showOpenDialog(dialogOptions)
     : await dialog.showOpenDialog(win, dialogOptions);
 
-  if (result.canceled || result.filePaths.length === 0) {
+  if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
     return null;
   }
-  return result.filePaths[0];
+  return normalizePath(result.filePaths[0]);
 }
 
 /**
@@ -123,6 +156,7 @@ export async function showOpenDialog(browserWindow) {
 export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.zos') {
   try {
     let resolvedDefault = defaultPath || 'Untitled.zos';
+    resolvedDefault = normalizePath(resolvedDefault);
 
     // If defaultPath is not an absolute path, resolve against Documents folder
     if (!path.isAbsolute(resolvedDefault)) {
@@ -153,7 +187,7 @@ export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.zos'
       return null;
     }
 
-    let finalPath = result.filePath;
+    let finalPath = normalizePath(result.filePath);
     if (!finalPath.toLowerCase().endsWith('.zos')) {
       finalPath = finalPath.replace(/\.[^/\\.]*$/, '') + '.zos';
     }

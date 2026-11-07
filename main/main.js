@@ -349,6 +349,11 @@ ipcMain.handle('dialog:unsaved-prompt', async (_event, fileName) => {
   return await promptUnsavedChanges(mainWindow, fileName);
 });
 
+ipcMain.handle('dialog:show-error', async (_event, { title, content }) => {
+  dialog.showErrorBox(title || 'Error', content || '');
+  return true;
+});
+
 ipcMain.handle('app:get-settings', async () => {
   return loadSettings();
 });

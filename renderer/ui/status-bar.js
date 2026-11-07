@@ -58,3 +58,21 @@ export function updateWarnings(warningCount, onWarningClick = null) {
     warningElem.classList.remove('visible');
   }
 }
+
+let toastTimeout = null;
+export function showStatusNotification(msg, durationMs = 3000) {
+  let toast = document.getElementById('status-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'status-toast';
+    toast.className = 'status-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('visible');
+  }, durationMs);
+}
+

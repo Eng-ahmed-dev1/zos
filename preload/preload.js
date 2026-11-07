@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('zosApi', {
   // Dialogs
   promptUnsavedChanges: (fileName) =>
     ipcRenderer.invoke('dialog:unsaved-prompt', fileName),
+  showErrorBox: (title, content) =>
+    ipcRenderer.invoke('dialog:show-error', { title, content }),
 
   // Settings & Startup
   getSettings: () => ipcRenderer.invoke('app:get-settings'),

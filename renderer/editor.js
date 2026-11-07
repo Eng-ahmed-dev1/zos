@@ -8,6 +8,7 @@ import {
   updateEncoding,
   updateLineEnding,
   updateLanguage,
+  showStatusNotification,
 } from './ui/status-bar.js';
 
 // Extremely lightweight offline worker setup:
@@ -260,7 +261,11 @@ export class ZosEditor {
       });
 
       if (!res.success) {
-        alert(`Could not save file: ${res.error}`);
+        if (window.zosApi?.showErrorBox) {
+          await window.zosApi.showErrorBox('Save Error', `Could not save file:\n${res.error}`);
+        } else {
+          alert(`Could not save file: ${res.error}`);
+        }
         return false;
       }
 
@@ -271,10 +276,18 @@ export class ZosEditor {
       // Refresh language mode: .zos files strictly receive 'zos' multi-language highlighting
       await this.setLanguageForFile(this.filePath);
       this.updateTitle();
+      showStatusNotification(`Saved: ${this.fileName}`);
+
       if (this.onFileChangedCallback) {
         this.onFileChangedCallback(this);
       }
       return true;
+    } catch (err) {
+      console.error('[Zos Pad] Save error:', err);
+      if (window.zosApi?.showErrorBox) {
+        await window.zosApi.showErrorBox('Save Error', `Unexpected error during save:\n${err.message}`);
+      }
+      return false;
     } finally {
       this.isSaving = false;
     }
