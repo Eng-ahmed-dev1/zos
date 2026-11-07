@@ -25,6 +25,7 @@ fileAssociations:
     mimeType: text/x-zos
 
 linux:
+  maintainer: "Ahmed <ahmed.devmail1@gmail.com>"
   target:
     - target: deb
       arch:
