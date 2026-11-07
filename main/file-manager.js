@@ -113,24 +113,31 @@ export async function showOpenDialog(browserWindow) {
 }
 
 /**
- * Shows Save As dialog
+ * Shows Save As dialog - strictly enforces .zos extension
  */
-export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.txt') {
+export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.zos') {
+  let resolvedDefault = defaultPath || 'Untitled.zos';
+  if (!resolvedDefault.toLowerCase().endsWith('.zos')) {
+    resolvedDefault = resolvedDefault.replace(/\.[^/\\.]*$/, '') + '.zos';
+  }
+
   const result = await dialog.showSaveDialog(browserWindow, {
-    title: 'Save As - Zos Pad',
-    defaultPath,
+    title: 'Save As - Zos Pad (*.zos)',
+    defaultPath: resolvedDefault,
     filters: [
-      { name: 'All Files (*.*)', extensions: ['*'] },
-      { name: 'Zos Files (*.zos)', extensions: ['zos'] },
-      { name: 'Markdown Files (*.md)', extensions: ['md'] },
-      { name: 'Text Files (*.txt)', extensions: ['txt'] },
+      { name: 'Zos Pad Documents (*.zos)', extensions: ['zos'] },
     ],
   });
 
   if (result.canceled || !result.filePath) {
     return null;
   }
-  return result.filePath;
+
+  let finalPath = result.filePath;
+  if (!finalPath.toLowerCase().endsWith('.zos')) {
+    finalPath = finalPath.replace(/\.[^/\\.]*$/, '') + '.zos';
+  }
+  return finalPath;
 }
 
 /**

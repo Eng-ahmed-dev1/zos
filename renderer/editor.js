@@ -93,7 +93,7 @@ export class ZosEditor {
       }
 
       if (this.isZosFile(this.filePath)) {
-        preloadDocumentLanguages(val);
+        await preloadDocumentLanguages(val, this.editor.getModel());
       }
       if (this.onContentChangeCallback) {
         this.onContentChangeCallback(val, this);
@@ -137,7 +137,7 @@ export class ZosEditor {
     if (this.isZosFile(filePath)) {
       await initZosLanguage();
       const content = this.editor.getValue();
-      await preloadDocumentLanguages(content);
+      await preloadDocumentLanguages(content, model);
       monaco.editor.setModelLanguage(model, 'zos');
       updateLanguage('zos');
     } else {
@@ -229,10 +229,21 @@ export class ZosEditor {
   async saveFile(saveAs = false) {
     let targetPath = this.filePath;
 
+    // If file is not yet saved to disk or user clicked "Save As", prompt for location and name
     if (!targetPath || saveAs) {
-      const defaultName = this.filePath ? this.fileName : 'Untitled.txt';
+      let defaultName = 'Untitled.zos';
+      if (this.filePath && this.fileName) {
+        defaultName = this.fileName.toLowerCase().endsWith('.zos')
+          ? this.fileName
+          : `${this.fileName.replace(/\.[^/\\.]*$/, '')}.zos`;
+      }
       targetPath = await window.zosApi.showSaveDialog(defaultName);
       if (!targetPath) return false;
+    }
+
+    // Strictly enforce .zos extension
+    if (!targetPath.toLowerCase().endsWith('.zos')) {
+      targetPath = `${targetPath.replace(/\.[^/\\.]*$/, '')}.zos`;
     }
 
     const content = this.editor.getValue();
@@ -250,7 +261,7 @@ export class ZosEditor {
     this.fileName = res.fileName;
     this.isDirty = false;
 
-    // Refresh language mode in case extension was changed during Save As
+    // Refresh language mode: .zos files strictly receive 'zos' multi-language highlighting
     await this.setLanguageForFile(this.filePath);
     this.updateTitle();
     if (this.onFileChangedCallback) {

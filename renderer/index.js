@@ -5,6 +5,7 @@ import { ZosEditor } from './editor.js';
 import { applyTheme, toggleTheme } from './ui/theme.js';
 import { validateZosDocument } from './zos-validator.js';
 import { initQuickPick, openQuickPick } from './ui/quick-pick.js';
+import { initZosLanguage } from './zos-language.js';
 import {
   initMarkdownPreview,
   togglePreviewMode,
@@ -18,6 +19,9 @@ let editorInstance = null;
 
 // Initialize on DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
+  // Pre-initialize Zos multi-language rules early so all tokenizers and themes are ready
+  await initZosLanguage();
+
   const container = document.getElementById('editor-container');
 
   // Create Editor instance with content change and file change listeners
@@ -254,6 +258,31 @@ function setupMenubar() {
     if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       openQuickPick();
+    }
+    // Alt+Z: Toggle Word Wrap
+    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      handleMenuAction('toggle-word-wrap');
+    }
+    // Ctrl+Q: Exit
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'q') {
+      e.preventDefault();
+      handleMenuAction('exit');
+    }
+    // Ctrl+= / Ctrl++: Zoom In
+    if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+      e.preventDefault();
+      handleMenuAction('zoom-in');
+    }
+    // Ctrl+-: Zoom Out
+    if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      e.preventDefault();
+      handleMenuAction('zoom-out');
+    }
+    // Ctrl+0: Reset Zoom
+    if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      e.preventDefault();
+      handleMenuAction('zoom-reset');
     }
   });
 }

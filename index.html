@@ -120,10 +120,18 @@
     <!-- About Dialog Modal -->
     <div id="about-modal" class="modal-overlay">
       <div class="about-box">
-        <img src="./assets/icon.png" alt="Zos Pad" style="width: 80px; height: 80px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" />
+        <img src="./assets/icon.png" alt="Zos Pad" style="width: 80px; height: 80px; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);" />
         <h2>Zos Pad</h2>
-        <p>Version 1.0.0<br/>A standalone Notepad-style text editor with embedded <strong>.zos</strong> code block highlighting and GitHub-style Markdown preview.</p>
-        <p style="font-size: 11px; opacity: 0.6;">Built with Electron and Monaco Editor in pure JavaScript.</p>
+        <div style="font-size: 14px; font-weight: 600; color: #4EC9B0; margin: 4px 0 8px 0;">Developer &amp; Creator: Ahmed Alaa</div>
+        <p style="font-size: 12px; line-height: 1.5; color: var(--fg-secondary, #cccccc); margin-bottom: 10px;">
+          Version 1.0.0<br/>
+          A standalone Notepad-style text editor with embedded <strong>.zos</strong> multi-language code block syntax highlighting and offline GitHub-style Markdown preview.
+        </p>
+        <div style="margin: 10px 0 14px 0; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 11px; text-align: center; border: 1px solid rgba(255,255,255,0.1); color: var(--fg-secondary, #aaaaaa);">
+          <strong style="color: var(--fg-primary, #ffffff); font-size: 12px;">© 2026 Ahmed Alaa. All Rights Reserved.</strong><br/>
+          Protected Proprietary Software Architecture &amp; System Concept.
+        </div>
+        <p style="font-size: 11px; opacity: 0.5; margin-bottom: 14px;">Built with Electron and Monaco Editor in pure JavaScript.</p>
         <button id="about-close-btn" class="about-close-btn">Close</button>
       </div>
     </div>

@@ -117,6 +117,12 @@ export function getAllSupportedLanguages() {
 /**
  * Initializes the 'zos' language and registers Monarch embedding rules programmatically
  */
+import { language as csharpLanguage } from 'monaco-editor/esm/vs/basic-languages/csharp/csharp.js';
+import { language as cppLanguage } from 'monaco-editor/esm/vs/basic-languages/cpp/cpp.js';
+import { language as dartLanguage } from 'monaco-editor/esm/vs/basic-languages/dart/dart.js';
+import { language as javaLanguage } from 'monaco-editor/esm/vs/basic-languages/java/java.js';
+import { language as pythonLanguage } from 'monaco-editor/esm/vs/basic-languages/python/python.js';
+
 export async function initZosLanguage() {
   if (zosLanguageInitialized) return;
 
@@ -125,34 +131,85 @@ export async function initZosLanguage() {
   const contribution = await import('monaco-editor/esm/vs/basic-languages/_.contribution.js');
   loadLanguageFn = contribution.loadLanguage;
 
-  // Print bundled languages list to console
-  const allLangs = monaco.languages.getLanguages();
-  console.log(`[Zos Pad] Bundled Monaco Languages count: ${allLangs.length}`);
-  console.log('[Zos Pad] Bundled Languages list:', allLangs.map((l) => l.id).join(', '));
-  const hasDart = allLangs.some((l) => l.id === 'dart');
-  console.log(`[Zos Pad] Verification: Dart is bundled? ${hasDart ? 'YES (Verified)' : 'NO'}`);
-
   // Register 'zos' language
   monaco.languages.register({ id: 'zos', extensions: ['.zos'] });
 
-  // Define themes to style #zores marker lines as gray comments
-  monaco.editor.defineTheme('zos-dark', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [
-      { token: 'comment.zos', foreground: '808080', fontStyle: 'italic' },
-    ],
-    colors: {},
-  });
+  // Pre-register and enhance core languages so they tokenize synchronously without chunk delay
+  // Enhanced C# Monarch definition: functions yellow, classes teal (both in root and qualified member access)
+  const enhancedCsharp = {
+    ...csharpLanguage,
+    tokenizer: {
+      ...csharpLanguage.tokenizer,
+      root: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, { token: 'function', next: '@qualified' }],
+        [/[A-Z]\w*/, { token: 'type.identifier', next: '@qualified' }],
+        ...csharpLanguage.tokenizer.root,
+      ],
+      qualified: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, 'function'],
+        [/[A-Z]\w*/, 'type.identifier'],
+        ...csharpLanguage.tokenizer.qualified,
+      ],
+    },
+  };
+  monaco.languages.setMonarchTokensProvider('csharp', enhancedCsharp);
 
-  monaco.editor.defineTheme('zos-light', {
-    base: 'vs',
-    inherit: true,
-    rules: [
-      { token: 'comment.zos', foreground: '707070', fontStyle: 'italic' },
-    ],
-    colors: {},
-  });
+  // Enhanced C / C++ Monarch definition: functions yellow, classes/types teal
+  const enhancedCpp = {
+    ...cppLanguage,
+    tokenizer: {
+      ...cppLanguage.tokenizer,
+      root: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, 'function'],
+        [/[A-Z]\w*/, 'type.identifier'],
+        ...cppLanguage.tokenizer.root,
+      ],
+    },
+  };
+  monaco.languages.setMonarchTokensProvider('cpp', enhancedCpp);
+  monaco.languages.setMonarchTokensProvider('c', enhancedCpp);
+
+  // Enhanced Dart Monarch definition
+  const enhancedDart = {
+    ...dartLanguage,
+    tokenizer: {
+      ...dartLanguage.tokenizer,
+      root: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, 'function'],
+        [/[A-Z]\w*/, 'type.identifier'],
+        ...dartLanguage.tokenizer.root,
+      ],
+    },
+  };
+  monaco.languages.setMonarchTokensProvider('dart', enhancedDart);
+
+  // Enhanced Java Monarch definition
+  const enhancedJava = {
+    ...javaLanguage,
+    tokenizer: {
+      ...javaLanguage.tokenizer,
+      root: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, 'function'],
+        [/[A-Z]\w*/, 'type.identifier'],
+        ...javaLanguage.tokenizer.root,
+      ],
+    },
+  };
+  monaco.languages.setMonarchTokensProvider('java', enhancedJava);
+
+  // Enhanced Python Monarch definition
+  const enhancedPython = {
+    ...pythonLanguage,
+    tokenizer: {
+      ...pythonLanguage.tokenizer,
+      root: [
+        [/[a-zA-Z_]\w*(?=\s*\()/, 'function'],
+        [/[A-Z]\w*/, 'type.identifier'],
+        ...pythonLanguage.tokenizer.root,
+      ],
+    },
+  };
+  monaco.languages.setMonarchTokensProvider('python', enhancedPython);
 
   // Programmatically generate Monarch embedding rules
   const supportedLangs = getAllSupportedLanguages();
@@ -229,11 +286,12 @@ export async function initZosLanguage() {
   zosLanguageInitialized = true;
 }
 
+const loadedLanguagesSet = new Set(['csharp', 'cpp', 'c', 'dart', 'java', 'python']);
 
 /**
  * Pre-loads tokenizers for languages found inside a .zos document so they highlight instantly
  */
-export async function preloadDocumentLanguages(text) {
+export async function preloadDocumentLanguages(text, editorModel = null) {
   if (!text || !loadLanguageFn) return;
 
   const matches = text.matchAll(/^#zores\/zos\/([a-zA-Z0-9_+#-]+)\s*$/gim);
@@ -243,11 +301,21 @@ export async function preloadDocumentLanguages(text) {
     if (canonical) detected.add(canonical);
   }
 
+  let newlyLoaded = false;
   for (const langId of detected) {
-    try {
-      await loadLanguageFn(langId);
-    } catch (err) {
-      console.warn(`[Zos Pad] Could not pre-load language ${langId}:`, err);
+    if (!loadedLanguagesSet.has(langId)) {
+      try {
+        await loadLanguageFn(langId);
+        loadedLanguagesSet.add(langId);
+        newlyLoaded = true;
+      } catch (err) {
+        console.warn(`[Zos Pad] Could not pre-load language ${langId}:`, err);
+      }
     }
+  }
+
+  if (newlyLoaded && editorModel) {
+    // Re-set language to flush token cache and re-tokenize with newly loaded language provider
+    monaco.editor.setModelLanguage(editorModel, 'zos');
   }
 }
