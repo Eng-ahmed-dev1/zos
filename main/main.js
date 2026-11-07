@@ -223,6 +223,7 @@ function createWindow() {
     y,
     minWidth: 500,
     minHeight: 380,
+    icon: path.join(__dirname, '../assets/icon.png'),
     title: 'Untitled - Zos Pad',
     backgroundColor: settings.theme === 'light' ? '#ffffff' : '#1e1e1e',
     show: false, // Wait until ready-to-show to prevent visual flicker

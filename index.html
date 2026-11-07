@@ -5,9 +5,11 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: zos-file:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Untitled - Zos Pad</title>
+  <link rel="icon" type="image/png" href="./assets/icon.png">
   <link rel="stylesheet" href="./assets/styles/app.css">
   <link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown.css">
   <link rel="stylesheet" href="./node_modules/highlight.js/styles/github-dark.css" id="hljs-theme">
+
 </head>
 <body>
   <div id="app">
@@ -67,6 +69,7 @@
     <!-- About Dialog Modal -->
     <div id="about-modal" class="modal-overlay">
       <div class="about-box">
+        <img src="./assets/icon.png" alt="Zos Pad" style="width: 80px; height: 80px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" />
         <h2>Zos Pad</h2>
         <p>Version 1.0.0<br/>A standalone Notepad-style text editor with embedded <strong>.zos</strong> code block highlighting and GitHub-style Markdown preview.</p>
         <p style="font-size: 11px; opacity: 0.6;">Built with Electron and Monaco Editor in pure JavaScript.</p>
