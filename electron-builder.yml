@@ -1,0 +1,55 @@
+appId: com.szos.zospad
+productName: Zos Pad
+copyright: "Copyright © 2026 Eng-ahmed-dev1"
+directories:
+  output: release
+  buildResources: assets
+
+asar: true
+compression: maximum
+
+files:
+  - "dist/**/*"
+  - "main/**/*"
+  - "preload/**/*"
+  - "assets/**/*"
+  - "package.json"
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+
+fileAssociations:
+  - ext: zos
+    name: Zos document
+    description: Zos document
+    role: Editor
+    mimeType: text/x-zos
+
+linux:
+  target:
+    - target: deb
+      arch:
+        - x64
+    - target: AppImage
+      arch:
+        - x64
+  category: Utility
+  synopsis: Standalone Notepad-style text editor with embedded .zos highlighting
+  description: Zos Pad opens any file as plain text, with embedded multi-language code highlighting exclusively for .zos files and GitHub-style offline Markdown preview.
+  icon: assets/icon.png
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  icon: assets/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Zos Pad

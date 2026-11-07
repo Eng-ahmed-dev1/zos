@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+release/
+build/
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+test_scratch/
+.system_generated/
+
+# OS files
+.DS_Store
+Thumbs.db

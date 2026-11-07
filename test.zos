@@ -1,0 +1,50 @@
+Sunday meeting: review the API and Architecture
+- Talk to the team about deadlines and deliverables
+- Verify that normal agenda notes remain plain text
+
+#zores/zos/csharp
+// C# Code Block
+using System;
+
+public class Program {
+    public static void Main() {
+        int count = 42;
+        Console.WriteLine($"Hello from C# block! Count: {count}");
+    }
+}
+#zores/end
+
+Middle plain notes between code blocks.
+This text must be unhighlighted plain text.
+
+#zores/zos/python
+# Python Code Block
+import sys
+
+def calculate_stats(numbers):
+    total = sum(numbers)
+    avg = total / len(numbers) if numbers else 0
+    return {"total": total, "average": avg}
+
+result = calculate_stats([10, 20, 30])
+print(f"Stats: {result}")
+#zores/end
+
+More plain text notes. Still no syntax highlighting here.
+
+#zores/zos/dart
+// Dart Code Block
+void main() {
+  final items = <String>['apple', 'banana', 'orange'];
+  for (final item in items) {
+    print('Item: $item');
+  }
+}
+#zores/end
+
+Final meeting review agenda item:
+- Check unclosed block below (must highlight as bash and trigger warning in Phase 3)
+
+#zores/zos/bash
+echo "This block is intentionally left open"
+echo "Everything after it remains highlighted as bash"

@@ -1,0 +1,34 @@
+{
+  "name": "zos-pad",
+  "version": "1.0.0",
+  "description": "Zos Pad - Standalone Notepad-style text editor with embedded .zos highlighting",
+  "main": "main/main.js",
+  "type": "module",
+  "scripts": {
+    "dev:renderer": "vite",
+    "build:renderer": "vite build",
+    "dev": "vite build --watch",
+    "app": "electron .",
+    "start": "vite build && electron ."
+  },
+  "keywords": [
+    "editor",
+    "notepad",
+    "monaco",
+    "zos"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dompurify": "^3.2.4",
+    "github-markdown-css": "^5.8.1",
+    "highlight.js": "^11.11.1",
+    "marked": "^15.0.7",
+    "monaco-editor": "^0.52.2"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.2.0"
+  }
+}

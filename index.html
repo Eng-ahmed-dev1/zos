@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: zos-file:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Untitled - Zos Pad</title>
+  <link rel="stylesheet" href="./assets/styles/app.css">
+  <link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown.css">
+  <link rel="stylesheet" href="./node_modules/highlight.js/styles/github-dark.css" id="hljs-theme">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Header / Notepad Menu Bar -->
+    <header class="header-bar">
+      <div class="menu-items">
+        <button class="menu-btn" id="menu-btn-file" title="File (Alt+F)">File</button>
+        <button class="menu-btn" id="menu-btn-edit" title="Edit (Alt+E)">Edit</button>
+        <button class="menu-btn" id="menu-btn-view" title="View (Alt+V)">View</button>
+        <button class="menu-btn" id="menu-btn-insert" title="Insert (Alt+I)">Insert</button>
+        <button class="menu-btn" id="menu-btn-help" title="Help (Alt+H)">Help</button>
+      </div>
+      <div class="header-actions">
+        <!-- Toggle button for Markdown Preview (Ctrl+Shift+V) -->
+        <button class="action-btn" id="btn-toggle-preview" style="display: none;" title="Toggle Markdown Preview (Ctrl+Shift+V)">
+          <span id="preview-btn-icon">👁️</span>
+          <span id="preview-btn-text">Preview</span>
+        </button>
+        <!-- Toggle Theme Button (Ctrl+Shift+T) -->
+        <button class="action-btn" id="btn-toggle-theme" title="Toggle Theme (Ctrl+Shift+T)">
+          <span id="theme-btn-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Workspace -->
+    <main class="workspace">
+      <!-- Monaco Editor Container -->
+      <div id="editor-container"></div>
+      <!-- GitHub-Style Markdown Preview Container -->
+      <div id="preview-container" class="markdown-body" dir="auto"></div>
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span id="status-warning" class="warning-badge" title="Click to go to first warning">⚠️ 0 unclosed blocks</span>
+      </div>
+      <div class="status-right">
+        <span class="status-item" id="status-cursor">Ln 1, Col 1</span>
+        <span class="status-item" id="status-encoding">UTF-8</span>
+        <span class="status-item" id="status-line-ending">LF</span>
+        <span class="status-item" id="status-language">Plain Text</span>
+      </div>
+    </footer>
+
+    <!-- Searchable Quick Pick Modal (Ctrl+Alt+Z) -->
+    <div id="quick-pick-modal" class="modal-overlay">
+      <div class="quick-pick-box">
+        <div class="quick-pick-input-wrapper">
+          <input type="text" id="quick-pick-input" class="quick-pick-input" placeholder="Type a language name or alias (e.g. csharp, python, dart)..." autocomplete="off" spellcheck="false" />
+        </div>
+        <ul id="quick-pick-list" class="quick-pick-list"></ul>
+      </div>
+    </div>
+
+    <!-- About Dialog Modal -->
+    <div id="about-modal" class="modal-overlay">
+      <div class="about-box">
+        <h2>Zos Pad</h2>
+        <p>Version 1.0.0<br/>A standalone Notepad-style text editor with embedded <strong>.zos</strong> code block highlighting and GitHub-style Markdown preview.</p>
+        <p style="font-size: 11px; opacity: 0.6;">Built with Electron and Monaco Editor in pure JavaScript.</p>
+        <button id="about-close-btn" class="about-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./renderer/index.js"></script>
+</body>
+</html>
