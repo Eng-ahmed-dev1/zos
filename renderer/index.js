@@ -247,37 +247,47 @@ function setupMenubar() {
       handleMenuAction('open-file');
     }
     // Ctrl+S: Save File
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key.toLowerCase() === 's' || e.code === 'KeyS')) {
       e.preventDefault();
       handleMenuAction('save-file');
     }
     // Ctrl+Shift+S: Save File As
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 's' || e.code === 'KeyS')) {
       e.preventDefault();
       handleMenuAction('save-file-as');
     }
+    // Ctrl+F: Find
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key.toLowerCase() === 'f' || e.code === 'KeyF')) {
+      e.preventDefault();
+      handleMenuAction('find');
+    }
+    // Ctrl+H: Replace
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key.toLowerCase() === 'h' || e.code === 'KeyH')) {
+      e.preventDefault();
+      handleMenuAction('replace');
+    }
     // Ctrl+Shift+T: Toggle Theme
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 't' || e.code === 'KeyT')) {
       e.preventDefault();
       toggleTheme();
     }
     // Ctrl+Shift+V: Toggle Markdown Preview
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'v') {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 'v' || e.code === 'KeyV')) {
       e.preventDefault();
       togglePreviewMode();
     }
     // Ctrl+Alt+Z: Insert Code Block
-    if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'z') {
+    if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key.toLowerCase() === 'z' || e.code === 'KeyZ')) {
       e.preventDefault();
       openQuickPick();
     }
     // Alt+Z: Toggle Word Wrap
-    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+    if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && (e.key.toLowerCase() === 'z' || e.code === 'KeyZ')) {
       e.preventDefault();
       handleMenuAction('toggle-word-wrap');
     }
     // Ctrl+Q: Exit
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'q') {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key.toLowerCase() === 'q' || e.code === 'KeyQ')) {
       e.preventDefault();
       handleMenuAction('exit');
     }

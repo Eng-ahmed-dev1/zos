@@ -1,4 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import 'monaco-editor/esm/vs/editor/editor.all.js';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import { initZosLanguage, preloadDocumentLanguages } from './zos-language.js';
 
@@ -34,6 +35,7 @@ export class ZosEditor {
     this.lineEndings = 'LF';
     this.fontSize = 14;
     this.wordWrap = 'on';
+    this.isSaving = false;
 
     // Initialize Monaco instance
     this.editor = monaco.editor.create(this.container, {
@@ -59,6 +61,7 @@ export class ZosEditor {
 
     this.bindEvents();
     this.updateTitle();
+    this.updateWordWrapUI();
     updateCursor(1, 1);
     updateEncoding('UTF-8');
     updateLineEnding('LF');
@@ -227,47 +230,54 @@ export class ZosEditor {
   }
 
   async saveFile(saveAs = false) {
-    let targetPath = this.filePath;
+    if (this.isSaving) return false;
+    this.isSaving = true;
 
-    // If file is not yet saved to disk or user clicked "Save As", prompt for location and name
-    if (!targetPath || saveAs) {
-      let defaultTarget = 'Untitled.zos';
-      if (this.filePath) {
-        defaultTarget = this.filePath.toLowerCase().endsWith('.zos')
-          ? this.filePath
-          : `${this.filePath.replace(/\.[^/\\.]*$/, '')}.zos`;
+    try {
+      let targetPath = this.filePath;
+
+      // If file is not yet saved to disk or user clicked "Save As", prompt for location and name
+      if (!targetPath || saveAs) {
+        let defaultTarget = 'Untitled.zos';
+        if (this.filePath) {
+          defaultTarget = this.filePath.toLowerCase().endsWith('.zos')
+            ? this.filePath
+            : `${this.filePath.replace(/\.[^/\\.]*$/, '')}.zos`;
+        }
+        targetPath = await window.zosApi.showSaveDialog(defaultTarget);
+        if (!targetPath) return false;
       }
-      targetPath = await window.zosApi.showSaveDialog(defaultTarget);
-      if (!targetPath) return false;
+
+      // Strictly enforce .zos extension
+      if (!targetPath.toLowerCase().endsWith('.zos')) {
+        targetPath = `${targetPath.replace(/\.[^/\\.]*$/, '')}.zos`;
+      }
+
+      const content = this.editor.getValue();
+      const res = await window.zosApi.writeFile(targetPath, content, {
+        hasBom: this.hasBom,
+        lineEndings: this.lineEndings,
+      });
+
+      if (!res.success) {
+        alert(`Could not save file: ${res.error}`);
+        return false;
+      }
+
+      this.filePath = res.filePath;
+      this.fileName = res.fileName;
+      this.isDirty = false;
+
+      // Refresh language mode: .zos files strictly receive 'zos' multi-language highlighting
+      await this.setLanguageForFile(this.filePath);
+      this.updateTitle();
+      if (this.onFileChangedCallback) {
+        this.onFileChangedCallback(this);
+      }
+      return true;
+    } finally {
+      this.isSaving = false;
     }
-
-    // Strictly enforce .zos extension
-    if (!targetPath.toLowerCase().endsWith('.zos')) {
-      targetPath = `${targetPath.replace(/\.[^/\\.]*$/, '')}.zos`;
-    }
-
-    const content = this.editor.getValue();
-    const res = await window.zosApi.writeFile(targetPath, content, {
-      hasBom: this.hasBom,
-      lineEndings: this.lineEndings,
-    });
-
-    if (!res.success) {
-      alert(`Could not save file: ${res.error}`);
-      return false;
-    }
-
-    this.filePath = res.filePath;
-    this.fileName = res.fileName;
-    this.isDirty = false;
-
-    // Refresh language mode: .zos files strictly receive 'zos' multi-language highlighting
-    await this.setLanguageForFile(this.filePath);
-    this.updateTitle();
-    if (this.onFileChangedCallback) {
-      this.onFileChangedCallback(this);
-    }
-    return true;
   }
 
   // Editing Commands
@@ -280,19 +290,37 @@ export class ZosEditor {
   }
 
   find() {
+    this.editor.focus();
     const action = this.editor.getAction('actions.find');
-    if (action) action.run();
+    if (action) {
+      action.run();
+    } else {
+      this.editor.trigger('menu', 'actions.find', null);
+    }
   }
 
   replace() {
+    this.editor.focus();
     const action = this.editor.getAction('editor.action.startFindReplaceAction');
-    if (action) action.run();
+    if (action) {
+      action.run();
+    } else {
+      this.editor.trigger('menu', 'editor.action.startFindReplaceAction', null);
+    }
   }
 
   toggleWordWrap() {
     this.wordWrap = this.wordWrap === 'on' ? 'off' : 'on';
     this.editor.updateOptions({ wordWrap: this.wordWrap });
     window.zosApi?.saveSettings?.({ wordWrap: this.wordWrap });
+    this.updateWordWrapUI();
+  }
+
+  updateWordWrapUI() {
+    const wrapSpan = document.querySelector('[data-action="toggle-word-wrap"] span:first-child');
+    if (wrapSpan) {
+      wrapSpan.textContent = this.wordWrap === 'on' ? '✓ Toggle Word Wrap' : 'Toggle Word Wrap';
+    }
   }
 
   zoomIn() {
@@ -322,6 +350,7 @@ export class ZosEditor {
     if (settings.wordWrap) {
       this.wordWrap = settings.wordWrap;
       this.editor.updateOptions({ wordWrap: this.wordWrap });
+      this.updateWordWrapUI();
     }
   }
 

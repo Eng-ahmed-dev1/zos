@@ -95,7 +95,8 @@ export async function writeFile(filePath, content, options = {}) {
  * Shows Open File dialog
  */
 export async function showOpenDialog(browserWindow) {
-  const result = await dialog.showOpenDialog(browserWindow, {
+  const win = browserWindow && !browserWindow.isDestroyed() ? browserWindow : null;
+  const dialogOptions = {
     title: 'Open File - Zos Pad',
     properties: ['openFile'],
     filters: [
@@ -104,7 +105,11 @@ export async function showOpenDialog(browserWindow) {
       { name: 'Markdown Files (*.md)', extensions: ['md', 'markdown'] },
       { name: 'Text Files (*.txt)', extensions: ['txt'] },
     ],
-  });
+  };
+
+  const result = (process.platform === 'linux' || !win)
+    ? await dialog.showOpenDialog(dialogOptions)
+    : await dialog.showOpenDialog(win, dialogOptions);
 
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -130,13 +135,19 @@ export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.zos'
     }
 
     const win = browserWindow && !browserWindow.isDestroyed() ? browserWindow : null;
-    const result = await dialog.showSaveDialog(win, {
+    const dialogOptions = {
       title: 'Save As - Zos Pad (*.zos)',
       defaultPath: resolvedDefault,
       filters: [
         { name: 'Zos Pad Documents (*.zos)', extensions: ['zos'] },
+        { name: 'All Files (*.*)', extensions: ['*'] },
       ],
-    });
+    };
+
+    // On Linux (especially GNOME Wayland), omitting parent window avoids portal transient export freeze
+    const result = (process.platform === 'linux' || !win)
+      ? await dialog.showSaveDialog(dialogOptions)
+      : await dialog.showSaveDialog(win, dialogOptions);
 
     if (result.canceled || !result.filePath) {
       return null;
