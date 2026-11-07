@@ -6,16 +6,20 @@
  * and #zores/end is tokenized using the target language's tokens.
  */
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
+import 'monaco-editor/esm/vs/basic-languages/monaco.contribution.js';
+import { loadLanguage } from 'monaco-editor/esm/vs/basic-languages/_.contribution.js';
 
 // Custom Language Aliases Map
 export const LANGUAGE_ALIASES = {
   // C / C++
   'c++': 'cpp',
-  'c': 'cpp',
+  'cpp': 'cpp',
+  'c': 'c',
   // C#
   'c#': 'csharp',
   'cs': 'csharp',
   'c-sharp': 'csharp',
+  'csharp': 'csharp',
   // JavaScript & TypeScript
   'js': 'javascript',
   'jsx': 'javascript',
@@ -26,6 +30,7 @@ export const LANGUAGE_ALIASES = {
   'py': 'python',
   'python3': 'python',
   'py3': 'python',
+  'python': 'python',
   // Shell / Bash
   'sh': 'shell',
   'bash': 'shell',
@@ -40,8 +45,10 @@ export const LANGUAGE_ALIASES = {
   'htm': 'html',
   // Go
   'golang': 'go',
+  'go': 'go',
   // Rust
   'rs': 'rust',
+  'rust': 'rust',
   // Ruby
   'rb': 'ruby',
   // Kotlin
@@ -49,10 +56,11 @@ export const LANGUAGE_ALIASES = {
   'kts': 'kotlin',
   // Dart
   'dart': 'dart',
+  'java': 'java',
 };
 
 let zosLanguageInitialized = false;
-let loadLanguageFn = null;
+let loadLanguageFn = loadLanguage;
 let supportedLanguagesCache = null;
 
 /**
@@ -78,7 +86,7 @@ function escapeRegex(str) {
  * Returns the list of all supported languages with display names and aliases
  */
 export function getAllSupportedLanguages() {
-  if (supportedLanguagesCache) return supportedLanguagesCache;
+  if (supportedLanguagesCache && supportedLanguagesCache.length > 5) return supportedLanguagesCache;
 
   const rawLanguages = monaco.languages.getLanguages();
   const langMap = new Map();
@@ -108,10 +116,13 @@ export function getAllSupportedLanguages() {
     });
   }
 
-  supportedLanguagesCache = Array.from(langMap.values()).sort((a, b) =>
+  const result = Array.from(langMap.values()).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
-  return supportedLanguagesCache;
+  if (result.length > 5) {
+    supportedLanguagesCache = result;
+  }
+  return result;
 }
 
 /**
@@ -126,10 +137,7 @@ import { language as pythonLanguage } from 'monaco-editor/esm/vs/basic-languages
 export async function initZosLanguage() {
   if (zosLanguageInitialized) return;
 
-  // Lazily load Monaco basic-languages contribution and loader
-  await import('monaco-editor/esm/vs/basic-languages/monaco.contribution.js');
-  const contribution = await import('monaco-editor/esm/vs/basic-languages/_.contribution.js');
-  loadLanguageFn = contribution.loadLanguage;
+  loadLanguageFn = loadLanguage;
 
   // Register 'zos' language
   monaco.languages.register({ id: 'zos', extensions: ['.zos'] });
@@ -254,8 +262,8 @@ export async function initZosLanguage() {
     },
   });
 
-  // Register 'zores' Snippet Completion Provider
-  monaco.languages.registerCompletionItemProvider('zos', {
+  // Register 'zores' Snippet Completion Provider for both 'zos' and 'plaintext'
+  const snippetProvider = {
     provideCompletionItems: (model, position) => {
       const word = model.getWordUntilPosition(position);
       const range = {
@@ -281,7 +289,10 @@ export async function initZosLanguage() {
         ],
       };
     },
-  });
+  };
+
+  monaco.languages.registerCompletionItemProvider('zos', snippetProvider);
+  monaco.languages.registerCompletionItemProvider('plaintext', snippetProvider);
 
   zosLanguageInitialized = true;
 }

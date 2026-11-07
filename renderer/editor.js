@@ -231,13 +231,13 @@ export class ZosEditor {
 
     // If file is not yet saved to disk or user clicked "Save As", prompt for location and name
     if (!targetPath || saveAs) {
-      let defaultName = 'Untitled.zos';
-      if (this.filePath && this.fileName) {
-        defaultName = this.fileName.toLowerCase().endsWith('.zos')
-          ? this.fileName
-          : `${this.fileName.replace(/\.[^/\\.]*$/, '')}.zos`;
+      let defaultTarget = 'Untitled.zos';
+      if (this.filePath) {
+        defaultTarget = this.filePath.toLowerCase().endsWith('.zos')
+          ? this.filePath
+          : `${this.filePath.replace(/\.[^/\\.]*$/, '')}.zos`;
       }
-      targetPath = await window.zosApi.showSaveDialog(defaultName);
+      targetPath = await window.zosApi.showSaveDialog(defaultTarget);
       if (!targetPath) return false;
     }
 

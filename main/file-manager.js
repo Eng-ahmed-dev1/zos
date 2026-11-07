@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import electron from 'electron';
-const dialog = electron?.dialog || electron;
+const { app, dialog } = electron || {};
 
 
 
@@ -113,31 +113,44 @@ export async function showOpenDialog(browserWindow) {
 }
 
 /**
- * Shows Save As dialog - strictly enforces .zos extension
+ * Shows Save As dialog - strictly enforces .zos extension and guarantees valid absolute path
  */
 export async function showSaveDialog(browserWindow, defaultPath = 'Untitled.zos') {
-  let resolvedDefault = defaultPath || 'Untitled.zos';
-  if (!resolvedDefault.toLowerCase().endsWith('.zos')) {
-    resolvedDefault = resolvedDefault.replace(/\.[^/\\.]*$/, '') + '.zos';
-  }
+  try {
+    let resolvedDefault = defaultPath || 'Untitled.zos';
 
-  const result = await dialog.showSaveDialog(browserWindow, {
-    title: 'Save As - Zos Pad (*.zos)',
-    defaultPath: resolvedDefault,
-    filters: [
-      { name: 'Zos Pad Documents (*.zos)', extensions: ['zos'] },
-    ],
-  });
+    // If defaultPath is not an absolute path, resolve against Documents folder
+    if (!path.isAbsolute(resolvedDefault)) {
+      const defaultDir = app?.getPath?.('documents') || app?.getPath?.('home') || process.cwd();
+      resolvedDefault = path.join(defaultDir, resolvedDefault);
+    }
 
-  if (result.canceled || !result.filePath) {
+    if (!resolvedDefault.toLowerCase().endsWith('.zos')) {
+      resolvedDefault = resolvedDefault.replace(/\.[^/\\.]*$/, '') + '.zos';
+    }
+
+    const win = browserWindow && !browserWindow.isDestroyed() ? browserWindow : null;
+    const result = await dialog.showSaveDialog(win, {
+      title: 'Save As - Zos Pad (*.zos)',
+      defaultPath: resolvedDefault,
+      filters: [
+        { name: 'Zos Pad Documents (*.zos)', extensions: ['zos'] },
+      ],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return null;
+    }
+
+    let finalPath = result.filePath;
+    if (!finalPath.toLowerCase().endsWith('.zos')) {
+      finalPath = finalPath.replace(/\.[^/\\.]*$/, '') + '.zos';
+    }
+    return finalPath;
+  } catch (err) {
+    console.error('[Zos Pad] Error showing save dialog:', err);
     return null;
   }
-
-  let finalPath = result.filePath;
-  if (!finalPath.toLowerCase().endsWith('.zos')) {
-    finalPath = finalPath.replace(/\.[^/\\.]*$/, '') + '.zos';
-  }
-  return finalPath;
 }
 
 /**

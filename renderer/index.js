@@ -19,8 +19,8 @@ let editorInstance = null;
 
 // Initialize on DOMContentLoaded
 window.addEventListener('DOMContentLoaded', async () => {
-  // Pre-initialize Zos multi-language rules early so all tokenizers and themes are ready
-  await initZosLanguage();
+  // Apply default dark theme immediately
+  applyTheme('dark', false);
 
   const container = document.getElementById('editor-container');
 
@@ -50,26 +50,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   );
   window.__editor = editorInstance;
 
-  // Initialize interactive components
+  // Initialize interactive UI components immediately
   initQuickPick(editorInstance);
   initMarkdownPreview(editorInstance);
-
-  // Load user settings
-  let settings = null;
-  if (window.zosApi?.getSettings) {
-    settings = await window.zosApi.getSettings();
-  }
-
-  // Apply theme & editor settings
-  applyTheme(settings?.theme || 'dark', false);
-  if (settings) {
-    editorInstance.applyInitialSettings(settings);
-  }
-
-  // Wire Top Menubar buttons
   setupMenubar();
 
-  // Wire IPC Menu Actions
+  // Wire IPC Menu Actions immediately
   if (window.zosApi?.onMenuAction) {
     window.zosApi.onMenuAction((action) => handleMenuAction(action));
   }
@@ -81,16 +67,42 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Check if a file was passed at initial launch
-  if (window.zosApi?.getStartupFile) {
-    const startupFile = await window.zosApi.getStartupFile();
-    if (startupFile) {
-      await editorInstance.openFile(startupFile);
-    }
-  }
-
   // Focus editor
   editorInstance.focus();
+
+  // Pre-initialize Zos multi-language rules early so all tokenizers and themes are ready
+  try {
+    await initZosLanguage();
+  } catch (err) {
+    console.warn('[Zos Pad] Error initializing Zos language rules:', err);
+  }
+
+  // Load user settings if available
+  try {
+    if (window.zosApi?.getSettings) {
+      const settings = await window.zosApi.getSettings();
+      if (settings?.theme) {
+        applyTheme(settings.theme, false);
+      }
+      if (settings) {
+        editorInstance.applyInitialSettings(settings);
+      }
+    }
+  } catch (err) {
+    console.warn('[Zos Pad] Error loading settings:', err);
+  }
+
+  // Check if a file was passed at initial launch
+  try {
+    if (window.zosApi?.getStartupFile) {
+      const startupFile = await window.zosApi.getStartupFile();
+      if (startupFile) {
+        await editorInstance.openFile(startupFile);
+      }
+    }
+  } catch (err) {
+    console.warn('[Zos Pad] Error reading startup file:', err);
+  }
 });
 
 function handleMenuAction(action) {

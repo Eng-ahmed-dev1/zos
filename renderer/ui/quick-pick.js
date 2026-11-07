@@ -22,7 +22,7 @@ export function initQuickPick(editorInstance) {
     filterLanguages(inputElem.value);
   });
 
-  inputElem.addEventListener('keydown', (e) => {
+  inputElem.addEventListener('keydown', async (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       selectedIndex = (selectedIndex + 1) % Math.max(1, filteredItems.length);
@@ -33,7 +33,7 @@ export function initQuickPick(editorInstance) {
       renderList();
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      confirmSelection();
+      await confirmSelection();
     } else if (e.key === 'Escape') {
       e.preventDefault();
       closeQuickPick();
@@ -50,18 +50,16 @@ export function initQuickPick(editorInstance) {
 export function openQuickPick() {
   if (!currentEditorInstance) return;
 
-  // Only enabled for .zos files
-  if (!currentEditorInstance.isZosFile(currentEditorInstance.filePath)) {
-    return;
-  }
-
   selectedIndex = 0;
   if (inputElem) inputElem.value = '';
   filterLanguages('');
 
   if (modalElem) {
     modalElem.classList.add('open');
-    setTimeout(() => inputElem?.focus(), 50);
+    setTimeout(() => {
+      inputElem?.focus();
+      inputElem?.select();
+    }, 50);
   }
 }
 
@@ -122,9 +120,9 @@ function renderList() {
     li.appendChild(nameSpan);
     li.appendChild(aliasSpan);
 
-    li.addEventListener('click', () => {
+    li.addEventListener('click', async () => {
       selectedIndex = index;
-      confirmSelection();
+      await confirmSelection();
     });
 
     listElem.appendChild(li);
@@ -136,29 +134,44 @@ function renderList() {
   }
 }
 
-function confirmSelection() {
+export async function confirmSelection() {
   const chosen = filteredItems[selectedIndex];
   if (!chosen || !currentEditorInstance) return;
 
   const langId = chosen.id;
   const editor = currentEditorInstance.editor;
-  const selection = editor.getSelection();
+  
+  // Safe selection or current cursor position
+  let range = editor.getSelection();
+  if (!range) {
+    const pos = editor.getPosition() || { lineNumber: 1, column: 1 };
+    range = {
+      startLineNumber: pos.lineNumber,
+      startColumn: pos.column,
+      endLineNumber: pos.lineNumber,
+      endColumn: pos.column,
+    };
+  }
 
   const insertText = `#zores/zos/${langId}\n\n#zores/end\n`;
   editor.executeEdits('quick-pick', [
     {
-      range: selection,
+      range: range,
       text: insertText,
       forceMoveMarkers: true,
     },
   ]);
 
   // Position cursor inside the blank line between the markers
-  const startLine = selection.startLineNumber;
+  const startLine = range.startLineNumber || 1;
   editor.setPosition({
     lineNumber: startLine + 1,
     column: 1,
   });
 
   closeQuickPick();
+  currentEditorInstance.focus();
+
+  // Always activate 'zos' language mode and load tokenizer for the selected language
+  await currentEditorInstance.setLanguageForFile(currentEditorInstance.filePath);
 }
