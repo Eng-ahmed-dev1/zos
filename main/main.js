@@ -227,6 +227,7 @@ function createWindow() {
     title: 'Untitled - Zos Pad',
     backgroundColor: settings.theme === 'light' ? '#ffffff' : '#1e1e1e',
     show: false, // Wait until ready-to-show to prevent visual flicker
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,

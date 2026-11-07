@@ -96,10 +96,63 @@ html, body {
   transition: background-color 0.1s ease;
 }
 
-.menu-btn:hover {
+.menu-btn:hover, .menu-btn.active {
   background-color: var(--menubar-hover);
   color: var(--text-color);
 }
+
+/* Dropdown Menus */
+.menu-dropdown-container {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  padding: 4px 0;
+  min-width: 220px;
+  display: none;
+  z-index: 10000;
+  user-select: none;
+}
+
+.dropdown-menu.open {
+  display: block;
+}
+
+.dropdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--list-active);
+  color: #ffffff;
+}
+
+.dropdown-item .shortcut {
+  font-size: 11px;
+  opacity: 0.65;
+  margin-left: 24px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
 
 .header-actions {
   display: flex;

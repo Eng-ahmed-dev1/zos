@@ -39,7 +39,7 @@ export class ZosEditor {
     this.editor = monaco.editor.create(this.container, {
       value: '',
       language: 'plaintext',
-      theme: 'vs-dark',
+      theme: 'zos-dark',
       automaticLayout: true,
       scrollBeyondLastLine: false,
       renderWhitespace: 'selection',
@@ -77,12 +77,21 @@ export class ZosEditor {
     });
 
     // Track content edits
-    this.editor.onDidChangeModelContent(() => {
+    this.editor.onDidChangeModelContent(async () => {
       if (!this.isDirty) {
         this.isDirty = true;
         this.updateTitle();
       }
       const val = this.editor.getValue();
+
+      // If document is untitled and contains #zores syntax, auto-switch to zos language mode
+      if (!this.filePath && /#zores\/(?:zos|end)/i.test(val)) {
+        const model = this.editor.getModel();
+        if (model && model.getLanguageId() !== 'zos') {
+          await this.setLanguageForFile(null);
+        }
+      }
+
       if (this.isZosFile(this.filePath)) {
         preloadDocumentLanguages(val);
       }
@@ -103,8 +112,14 @@ export class ZosEditor {
   }
 
   isZosFile(pathOrName) {
-    if (!pathOrName) return false;
-    return pathOrName.toLowerCase().endsWith('.zos');
+    if (pathOrName) {
+      return pathOrName.toLowerCase().endsWith('.zos');
+    }
+    // If untitled (null path), check if content has #zores blocks
+    if (this.editor) {
+      return /#zores\/(?:zos|end)/i.test(this.editor.getValue());
+    }
+    return false;
   }
 
   isMarkdownFile(pathOrName) {
@@ -117,7 +132,7 @@ export class ZosEditor {
     const model = this.editor.getModel();
     if (!model) return;
 
-    // Strict rule: ONLY .zos files get syntax highlighting ('zos').
+    // Strict rule: ONLY .zos files (or untitled with #zores blocks) get syntax highlighting ('zos').
     // All other files ALWAYS use 'plaintext'.
     if (this.isZosFile(filePath)) {
       await initZosLanguage();

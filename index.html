@@ -16,12 +16,63 @@
     <!-- Top Header / Notepad Menu Bar -->
     <header class="header-bar">
       <div class="menu-items">
-        <button class="menu-btn" id="menu-btn-file" title="File (Alt+F)">File</button>
-        <button class="menu-btn" id="menu-btn-edit" title="Edit (Alt+E)">Edit</button>
-        <button class="menu-btn" id="menu-btn-view" title="View (Alt+V)">View</button>
-        <button class="menu-btn" id="menu-btn-insert" title="Insert (Alt+I)">Insert</button>
-        <button class="menu-btn" id="menu-btn-help" title="Help (Alt+H)">Help</button>
+        <!-- File Menu -->
+        <div class="menu-dropdown-container">
+          <button class="menu-btn" id="menu-btn-file">File</button>
+          <div class="dropdown-menu" id="dropdown-file">
+            <div class="dropdown-item" data-action="new-file"><span>New</span><span class="shortcut">Ctrl+N</span></div>
+            <div class="dropdown-item" data-action="open-file"><span>Open...</span><span class="shortcut">Ctrl+O</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="save-file"><span>Save</span><span class="shortcut">Ctrl+S</span></div>
+            <div class="dropdown-item" data-action="save-file-as"><span>Save As...</span><span class="shortcut">Ctrl+Shift+S</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="exit"><span>Exit</span><span class="shortcut">Ctrl+Q</span></div>
+          </div>
+        </div>
+
+        <!-- Edit Menu -->
+        <div class="menu-dropdown-container">
+          <button class="menu-btn" id="menu-btn-edit">Edit</button>
+          <div class="dropdown-menu" id="dropdown-edit">
+            <div class="dropdown-item" data-action="undo"><span>Undo</span><span class="shortcut">Ctrl+Z</span></div>
+            <div class="dropdown-item" data-action="redo"><span>Redo</span><span class="shortcut">Ctrl+Y</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="find"><span>Find...</span><span class="shortcut">Ctrl+F</span></div>
+            <div class="dropdown-item" data-action="replace"><span>Replace...</span><span class="shortcut">Ctrl+H</span></div>
+          </div>
+        </div>
+
+        <!-- View Menu -->
+        <div class="menu-dropdown-container">
+          <button class="menu-btn" id="menu-btn-view">View</button>
+          <div class="dropdown-menu" id="dropdown-view">
+            <div class="dropdown-item" data-action="toggle-word-wrap"><span>Toggle Word Wrap</span><span class="shortcut">Alt+Z</span></div>
+            <div class="dropdown-item" data-action="toggle-theme"><span>Toggle Dark / Light</span><span class="shortcut">Ctrl+Shift+T</span></div>
+            <div class="dropdown-item" data-action="toggle-preview"><span>Toggle Markdown Preview</span><span class="shortcut">Ctrl+Shift+V</span></div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="zoom-in"><span>Zoom In</span><span class="shortcut">Ctrl+=</span></div>
+            <div class="dropdown-item" data-action="zoom-out"><span>Zoom Out</span><span class="shortcut">Ctrl+-</span></div>
+            <div class="dropdown-item" data-action="zoom-reset"><span>Reset Zoom</span><span class="shortcut">Ctrl+0</span></div>
+          </div>
+        </div>
+
+        <!-- Insert Menu -->
+        <div class="menu-dropdown-container">
+          <button class="menu-btn" id="menu-btn-insert">Insert</button>
+          <div class="dropdown-menu" id="dropdown-insert">
+            <div class="dropdown-item" data-action="insert-code-block"><span>Code Block...</span><span class="shortcut">Ctrl+Alt+Z</span></div>
+          </div>
+        </div>
+
+        <!-- Help Menu -->
+        <div class="menu-dropdown-container">
+          <button class="menu-btn" id="menu-btn-help">Help</button>
+          <div class="dropdown-menu" id="dropdown-help">
+            <div class="dropdown-item" data-action="about"><span>About Zos Pad</span></div>
+          </div>
+        </div>
       </div>
+
       <div class="header-actions">
         <!-- Toggle button for Markdown Preview (Ctrl+Shift+V) -->
         <button class="action-btn" id="btn-toggle-preview" style="display: none;" title="Toggle Markdown Preview (Ctrl+Shift+V)">

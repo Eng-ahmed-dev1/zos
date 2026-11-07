@@ -141,6 +141,9 @@ function handleMenuAction(action) {
     case 'about':
       showAboutModal();
       break;
+    case 'exit':
+      window.close();
+      break;
   }
 }
 
@@ -149,24 +152,56 @@ function setupMenubar() {
     toggleTheme();
   });
 
-  document.getElementById('menu-btn-file')?.addEventListener('click', () => {
-    editorInstance.openFile();
+  let activeMenu = null;
+
+  function closeAllMenus() {
+    document.querySelectorAll('.dropdown-menu').forEach((m) => m.classList.remove('open'));
+    document.querySelectorAll('.menu-btn').forEach((b) => b.classList.remove('active'));
+    activeMenu = null;
+  }
+
+  const menuContainers = document.querySelectorAll('.menu-dropdown-container');
+  menuContainers.forEach((container) => {
+    const btn = container.querySelector('.menu-btn');
+    const dropdown = container.querySelector('.dropdown-menu');
+    if (!btn || !dropdown) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = dropdown.classList.contains('open');
+      closeAllMenus();
+      if (!isOpen) {
+        dropdown.classList.add('open');
+        btn.classList.add('active');
+        activeMenu = dropdown;
+      }
+    });
+
+    btn.addEventListener('mouseenter', () => {
+      if (activeMenu && activeMenu !== dropdown) {
+        closeAllMenus();
+        dropdown.classList.add('open');
+        btn.classList.add('active');
+        activeMenu = dropdown;
+      }
+    });
   });
 
-  document.getElementById('menu-btn-edit')?.addEventListener('click', () => {
-    editorInstance.find();
+  // Handle dropdown items click
+  document.querySelectorAll('.dropdown-item').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = item.getAttribute('data-action');
+      closeAllMenus();
+      if (action) {
+        handleMenuAction(action);
+      }
+    });
   });
 
-  document.getElementById('menu-btn-view')?.addEventListener('click', () => {
-    editorInstance.toggleWordWrap();
-  });
-
-  document.getElementById('menu-btn-insert')?.addEventListener('click', () => {
-    openQuickPick();
-  });
-
-  document.getElementById('menu-btn-help')?.addEventListener('click', () => {
-    showAboutModal();
+  // Close menus on clicking outside
+  document.addEventListener('click', () => {
+    closeAllMenus();
   });
 
   // About modal close
@@ -182,6 +217,29 @@ function setupMenubar() {
 
   // Global Keyboard shortcuts
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllMenus();
+    }
+    // Ctrl+N: New File
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      handleMenuAction('new-file');
+    }
+    // Ctrl+O: Open File
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'o') {
+      e.preventDefault();
+      handleMenuAction('open-file');
+    }
+    // Ctrl+S: Save File
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      handleMenuAction('save-file');
+    }
+    // Ctrl+Shift+S: Save File As
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      handleMenuAction('save-file-as');
+    }
     // Ctrl+Shift+T: Toggle Theme
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') {
       e.preventDefault();
@@ -203,3 +261,4 @@ function setupMenubar() {
 function showAboutModal() {
   document.getElementById('about-modal')?.classList.add('open');
 }
+
